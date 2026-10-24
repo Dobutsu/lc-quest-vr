@@ -1,0 +1,41 @@
+--- a/Source/Managers/InitSceneManager.cs	2026-10-24 16:31:53
++++ b/Source/Managers/InitSceneManager.cs	2026-10-24 16:31:53
+@@ -29,9 +29,27 @@
+ 
+         sceneVolume.TryGet(out colorAdjustments);
+ 
++        if (Application.platform == RuntimePlatform.Android)
++            OnlyLocal();
++
+         StartCoroutine(FadeScene(false));
+     }
+ 
++    /// <summary>
++    /// The Quest has no Steam client, so Online cannot work there and only confused players: its button goes, and
++    /// LOCAL moves to the middle. Steam lobbies are joined from LAN mode through the port's Steam bridge
++    /// </summary>
++    private static void OnlyLocal()
++    {
++        var online = GameObject.Find("Online")?.transform as RectTransform;
++        var local = GameObject.Find("LAN")?.transform as RectTransform;
++        if (online == null || local == null)
++            return;
++
++        online.gameObject.SetActive(false);
++        local.anchoredPosition = new Vector2((online.anchoredPosition.x + local.anchoredPosition.x) / 2, local.anchoredPosition.y);
++    }
++
+     public void HoverSfx()
+     {
+         audioSource.PlayOneShot(hoverAudio);
+@@ -67,6 +85,10 @@
+         if (defaultVolume)
+             defaultVolume.enabled = true;
+ 
++        // Online would load InitScene, whose Steam objects throw before the menu starts (OnlyLocal hides its button)
++        if (Application.platform == RuntimePlatform.Android)
++            local = true;
++
+         SceneManager.LoadScene(local ? "InitSceneLANMode" : "InitScene");
+     }
+ 

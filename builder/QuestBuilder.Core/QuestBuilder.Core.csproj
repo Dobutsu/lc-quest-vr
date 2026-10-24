@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <!-- Everything the builder does, without UI: setup (downloads, Unity, Python), the build pipeline, updates, Quest -->
+    <PropertyGroup>
+        <RootNamespace>LCQuest.Builder</RootNamespace>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="../../tools/HarmonyBaker/HarmonyBaker.csproj" />
+        <ProjectReference Include="../../tools/AssemblyRenamer/AssemblyRenamer.csproj" />
+        <ProjectReference Include="../../tools/ShimMaker/ShimMaker.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <InternalsVisibleTo Include="QuestBuilder.Tests" />
+    </ItemGroup>
+
+</Project>

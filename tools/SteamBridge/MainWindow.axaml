@@ -1,0 +1,54 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="LCQuest.SteamBridge.MainWindow"
+        Title="Lethal Company Quest: Steam bridge"
+        Width="460" Height="600" MinWidth="380" MinHeight="460"
+        WindowStartupLocation="CenterScreen">
+    <DockPanel Margin="16">
+        <!-- Steam account -->
+        <StackPanel DockPanel.Dock="Top" Spacing="2">
+            <TextBlock Text="Steam account" FontSize="12" Opacity="0.65" />
+            <TextBlock x:Name="AccountText" Text="Starting Steam..." FontSize="18" FontWeight="SemiBold" />
+        </StackPanel>
+
+        <!-- What to do on the headset -->
+        <Border DockPanel.Dock="Top" Margin="0,14,0,0" Padding="12" CornerRadius="6"
+                Background="{DynamicResource SystemControlBackgroundBaseLowBrush}">
+            <StackPanel Spacing="4">
+                <TextBlock Text="On the Quest" FontSize="12" Opacity="0.65" />
+                <TextBlock TextWrapping="Wrap"
+                           Text="Main menu, address panel: &quot;Via Steam bridge: On&quot;, type this address, then &quot;Join LAN session&quot; while the host's ship is in orbit." />
+                <SelectableTextBlock x:Name="AddressText" Text="..." FontSize="26" FontWeight="Bold"
+                                     FontFamily="Consolas, Menlo, monospace" Margin="0,4,0,0" />
+            </StackPanel>
+        </Border>
+
+        <!-- Status -->
+        <StackPanel DockPanel.Dock="Top" Margin="0,14,0,0" Spacing="2">
+            <TextBlock Text="Status" FontSize="12" Opacity="0.65" />
+            <TextBlock x:Name="StatusText" Text="Starting..." FontSize="15" FontWeight="SemiBold" TextWrapping="Wrap" />
+            <Button x:Name="RetryButton" Content="Try again" IsVisible="False" Margin="0,6,0,0" />
+        </StackPanel>
+
+        <!-- Log -->
+        <Expander DockPanel.Dock="Bottom" Header="Log" Margin="0,12,0,0" HorizontalAlignment="Stretch">
+            <TextBox x:Name="LogBox" IsReadOnly="True" Height="140" TextWrapping="Wrap" FontSize="11"
+                     FontFamily="Consolas, Menlo, monospace" />
+        </Expander>
+
+        <!-- Lobby -->
+        <DockPanel Margin="0,14,0,0">
+            <DockPanel DockPanel.Dock="Top">
+                <Button x:Name="AutoButton" DockPanel.Dock="Right" Content="Automatic" Padding="10,2"
+                        ToolTip.Tip="Forget the pick: the only friend's lobby there is, or an invite" />
+                <TextBlock Text="Friends in Lethal Company lobbies" FontSize="12" Opacity="0.65" VerticalAlignment="Center" />
+            </DockPanel>
+            <TextBlock x:Name="PickText" DockPanel.Dock="Bottom" Margin="0,6,0,0" FontSize="12" TextWrapping="Wrap" Opacity="0.8" />
+            <Panel Margin="0,6,0,0">
+                <ListBox x:Name="LobbyList" />
+                <TextBlock x:Name="NoLobbiesText" Margin="12" Opacity="0.6" TextWrapping="Wrap" IsVisible="False"
+                           Text="None right now. The host clicks Host (Online) and stays in orbit; invite this account from the game, or pick the friend here." />
+            </Panel>
+        </DockPanel>
+    </DockPanel>
+</Window>

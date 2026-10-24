@@ -1,0 +1,43 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <!--
+    unity-tools/Runtime compiled outside Unity: a quick compile check, and the input that tells tools/ShimMaker which
+    HDRP members our runtime code uses (it compiles against the original HDRP; the shim then keeps those members).
+    References: the game's managed DLLs (engine modules, game, Netcode, original HDRP) and the package assemblies Unity
+    compiled into work/project/Library/ScriptAssemblies (URP, RP Core, TMP, uGUI).
+      dotnet build tools/UnityScripts -c Release   -> bin/Release/netstandard2.1/LCQuest.Runtime.dll
+    -->
+    <PropertyGroup>
+        <TargetFramework>netstandard2.1</TargetFramework>
+        <AssemblyName>LCQuest.Runtime</AssemblyName>
+        <LangVersion>9.0</LangVersion>
+        <Nullable>disable</Nullable>
+        <ImplicitUsings>disable</ImplicitUsings>
+        <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+        <NoWarn>CS0618;CS0649</NoWarn>
+        <Work>$(MSBuildThisFileDirectory)../../work</Work>
+        <Managed>$(Work)/game/Lethal Company_Data/Managed</Managed>
+        <Scripts>$(Work)/project/Library/ScriptAssemblies</Scripts>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <Compile Include="../../unity-tools/Runtime/**/*.cs" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <Reference Include="$(Managed)/UnityEngine*.dll" Exclude="$(Managed)/UnityEngine.UI.dll" Private="false" />
+        <Reference Include="$(Managed)/Assembly-CSharp.dll" Private="false" />
+        <Reference Include="$(Managed)/Assembly-CSharp-firstpass.dll" Private="false" />
+        <Reference Include="$(Managed)/Unity.Netcode.Runtime.dll" Private="false" />
+        <Reference Include="$(Managed)/Unity.Networking.Transport.dll" Private="false" />
+        <Reference Include="$(Managed)/DissonanceVoip.dll" Private="false" />
+        <Reference Include="$(Managed)/DunGen.dll" Private="false" />
+        <Reference Include="$(Work)/hdrp-original/Unity.RenderPipelines.HighDefinition.Runtime.dll" Private="false" />
+        <Reference Include="$(Scripts)/Unity.RenderPipelines.Core.Runtime.dll" Private="false" />
+        <Reference Include="$(Scripts)/Unity.RenderPipelines.Universal.Runtime.dll" Private="false" />
+        <Reference Include="$(Scripts)/Unity.TextMeshPro.dll" Private="false" />
+        <Reference Include="$(Scripts)/UnityEngine.UI.dll" Private="false" />
+        <Reference Include="$(Scripts)/Unity.Mathematics.dll" Private="false" />
+    </ItemGroup>
+
+</Project>

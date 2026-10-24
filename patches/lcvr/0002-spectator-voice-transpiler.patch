@@ -1,0 +1,36 @@
+--- a/Source/Patches/Spectating/Patches.cs
++++ b/Source/Patches/Spectating/Patches.cs
+@@ -99,18 +99,28 @@
+     [HarmonyTranspiler]
+     private static IEnumerable<CodeInstruction> SpectatorGlobalAudioPatches(IEnumerable<CodeInstruction> instructions)
+     {
++        // audioSource.spatialBlend = 1f; player.currentVoiceChatIngameSettings.set2D = false;
++        //   -> SetSpatialSettings(audioSource, player.currentVoiceChatIngameSettings, player);
++        // Matched by pattern: counting back from lowpassResonanceQ left "set2D = false" writing into the player
++        // object on V81 (Mono runs it, IL2CPP rejects it)
+         return new CodeMatcher(instructions)
+             .MatchForward(false,
+-                new CodeMatch(OpCodes.Callvirt,
+-                    PropertySetter(typeof(AudioLowPassFilter), nameof(AudioLowPassFilter.lowpassResonanceQ))))
+-            .Advance(-22)
++                new CodeMatch(OpCodes.Ldc_R4, 1f),
++                new CodeMatch(OpCodes.Callvirt, PropertySetter(typeof(AudioSource), nameof(AudioSource.spatialBlend))),
++                new CodeMatch(OpCodes.Ldloc_1),
++                new CodeMatch(OpCodes.Ldfld,
++                    Field(typeof(PlayerControllerB), nameof(PlayerControllerB.currentVoiceChatIngameSettings))),
++                new CodeMatch(OpCodes.Ldc_I4_0),
++                new CodeMatch(OpCodes.Stfld,
++                    Field(typeof(PlayerVoiceIngameSettings), nameof(PlayerVoiceIngameSettings.set2D))))
++            .ThrowIfInvalid("UpdatePlayerVoiceEffects: spatial voice settings not found")
+             .RemoveInstructions(2)
+             .Advance(2)
++            .RemoveInstructions(2)
+             .Insert(
+                 new CodeInstruction(OpCodes.Ldloc_1),
+                 new CodeInstruction(OpCodes.Call,
+-                    ((Action<AudioSource, PlayerVoiceIngameSettings, PlayerControllerB>)SetSpatialSettings).Method),
+-                new CodeInstruction(OpCodes.Ldloc_1)
++                    ((Action<AudioSource, PlayerVoiceIngameSettings, PlayerControllerB>)SetSpatialSettings).Method)
+             )
+             .InstructionEnumeration();
+ 

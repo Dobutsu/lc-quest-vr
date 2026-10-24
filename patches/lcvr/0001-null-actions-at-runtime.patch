@@ -1,0 +1,21 @@
+--- a/Source/Patches/InputPatches.cs
++++ b/Source/Patches/InputPatches.cs
+@@ -146,7 +146,16 @@
+     {
+         return new CodeMatcher(instructions)
+             .MatchForward(false, new CodeMatch(OpCodes.Ldstr))
+-            .SetOperandAndAdvance(AssetManager.NullActions.ToJson())
++            .SetInstructionAndAdvance(new CodeInstruction(OpCodes.Call, Method(typeof(InputPatches), nameof(NullActionsJson))))
+             .InstructionEnumeration();
+     }
++
++    /// <summary>
++    /// Read when PlayerActions is constructed, not when the transpiler runs: the Quest build bakes patches ahead of
++    /// time, before the asset bundle with NullActions exists
++    /// </summary>
++    internal static string NullActionsJson()
++    {
++        return AssetManager.NullActions.ToJson();
++    }
+ }
+\ No newline at end of file

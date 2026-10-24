@@ -1,0 +1,43 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <!--
+    The Steam bridge for Quest players (docs/multiplayer.md): a small window (Avalonia) for Windows that runs next to Steam,
+    logged in with the Quest player's account, joins a friend's Online lobby and relays the game's traffic between
+    the host (Steam networking) and the headset (TCP, unity-tools/Runtime/BridgeProtocol.cs).
+      dotnet publish tools/SteamBridge -c Release -r win-x64   -> bin/Release/net8.0/win-x64/publish/
+    -->
+    <PropertyGroup>
+        <OutputType>WinExe</OutputType>
+        <TargetFramework>net8.0</TargetFramework>
+        <ApplicationManifest>app.manifest</ApplicationManifest>
+        <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
+        <InvariantGlobalization>true</InvariantGlobalization>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <LangVersion>latest</LangVersion>
+        <AssemblyName>LCQuestSteamBridge</AssemblyName>
+        <RootNamespace>LCQuest.SteamBridge</RootNamespace>
+    </PropertyGroup>
+
+    <!-- The players' exe: dotnet publish -r win-x64. Only with a runtime identifier, so that dotnet run works on the
+         Mac (the window, without Steam: Facepunch's Win64 build) -->
+    <PropertyGroup Condition="'$(RuntimeIdentifier)' != ''">
+        <SelfContained>true</SelfContained>
+        <PublishSingleFile>true</PublishSingleFile>
+        <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
+        <EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Avalonia" Version="12.1.3" />
+        <PackageReference Include="Avalonia.Desktop" Version="12.1.3" />
+        <PackageReference Include="Avalonia.Themes.Fluent" Version="12.1.3" />
+        <PackageReference Include="Avalonia.Fonts.Inter" Version="12.1.3" />
+        <PackageReference Include="Facepunch.Steamworks" Version="2.3.3" GeneratePathProperty="true" />
+        <Compile Include="../../unity-tools/Runtime/BridgeProtocol.cs" Link="BridgeProtocol.cs" />
+        <!-- Steamworks' redistributable API library, which the package ships as content -->
+        <None Include="$(PkgFacepunch_Steamworks)/content/steam_api64.dll" Link="steam_api64.dll"
+              CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+    </ItemGroup>
+
+</Project>

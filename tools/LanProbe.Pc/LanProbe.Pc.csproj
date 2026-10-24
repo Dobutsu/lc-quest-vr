@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <!-- Test-only BepInEx plugin for a CrossOver copy of the PC game: picks LAN mode and hosts or joins by IP with no
+         clicks, to check that a client with an overridden address reaches a LAN host (docs/feasibility.md) -->
+    <PropertyGroup>
+        <TargetFramework>netstandard2.1</TargetFramework>
+        <Nullable>disable</Nullable>
+        <LangVersion>latest</LangVersion>
+        <AssemblyName>LcQuest.LanProbe</AssemblyName>
+        <RootNamespace>LcQuest</RootNamespace>
+        <GameManaged Condition="'$(GameManaged)' == ''">$(MSBuildThisFileDirectory)../../work/game/Lethal Company_Data/Managed</GameManaged>
+        <BepInExCore Condition="'$(BepInExCore)' == ''">$(MSBuildThisFileDirectory)../../work/downloads/BepInEx5/BepInEx/core</BepInExCore>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <Reference Include="BepInEx" HintPath="$(BepInExCore)/BepInEx.dll" Private="false" />
+        <Reference Include="Assembly-CSharp" HintPath="$(GameManaged)/Assembly-CSharp.dll" Private="false" />
+        <Reference Include="Unity.Netcode.Runtime" HintPath="$(GameManaged)/Unity.Netcode.Runtime.dll" Private="false" />
+        <Reference Include="Unity.Networking.Transport" HintPath="$(GameManaged)/Unity.Networking.Transport.dll" Private="false" />
+        <Reference Include="UnityEngine" HintPath="$(GameManaged)/UnityEngine.dll" Private="false" />
+        <Reference Include="UnityEngine.CoreModule" HintPath="$(GameManaged)/UnityEngine.CoreModule.dll" Private="false" />
+    </ItemGroup>
+</Project>

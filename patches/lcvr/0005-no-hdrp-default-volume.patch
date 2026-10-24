@@ -1,0 +1,24 @@
+--- a/Source/Managers/InitSceneManager.cs
++++ b/Source/Managers/InitSceneManager.cs
+@@ -22,8 +22,10 @@
+ 
+     private void Awake()
+     {
++        // HDRP's hidden default volume; the Quest build (URP) has none
+         defaultVolume = StaticAssets.GetRootComponent<Volume>("Default Volume");
+-        defaultVolume.enabled = false;
++        if (defaultVolume)
++            defaultVolume.enabled = false;
+ 
+         sceneVolume.TryGet(out colorAdjustments);
+ 
+@@ -62,7 +64,8 @@
+         yield return new WaitForSeconds(0.5f);
+         yield return FadeScene(true);
+ 
+-        defaultVolume.enabled = true;
++        if (defaultVolume)
++            defaultVolume.enabled = true;
+ 
+         SceneManager.LoadScene(local ? "InitSceneLANMode" : "InitScene");
+     }

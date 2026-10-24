@@ -1,0 +1,41 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <!-- Starts LCVR without BepInEx's preloader/chainloader, for builds where its patches are baked in -->
+    <PropertyGroup>
+        <TargetFramework>netstandard2.1</TargetFramework>
+        <Nullable>disable</Nullable>
+        <LangVersion>latest</LangVersion>
+        <RootNamespace>LCVR.Standalone</RootNamespace>
+        <GameManaged Condition="'$(GameManaged)' == ''">$(MSBuildThisFileDirectory)../../work/game/Lethal Company_Data/Managed</GameManaged>
+        <BepInExCore Condition="'$(BepInExCore)' == ''">$(MSBuildThisFileDirectory)../../work/downloads/BepInEx5/BepInEx/core</BepInExCore>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <!-- Overrides name LCVR's internal types; compile against a publicized copy of the mod -->
+        <PackageReference Include="BepInEx.AssemblyPublicizer.MSBuild" Version="0.4.3" PrivateAssets="all" />
+        <Reference Include="LCVR" Publicize="true">
+            <!-- LCVR with patches/lcvr applied (scripts/prepare-lcvr.sh) -->
+            <HintPath>$(MSBuildThisFileDirectory)../../work/lcvr-src/bin/Release/netstandard2.1/LCVR.dll</HintPath>
+            <Private>false</Private>
+        </Reference>
+        <Reference Include="UnityEngine.CoreModule">
+            <HintPath>$(GameManaged)/UnityEngine.CoreModule.dll</HintPath>
+            <Private>false</Private>
+        </Reference>
+        <Reference Include="BepInEx">
+            <HintPath>$(BepInExCore)/BepInEx.dll</HintPath>
+            <Private>false</Private>
+        </Reference>
+        <!-- Target of an Android override (Friend.Name) -->
+        <Reference Include="Facepunch.Steamworks.Win64">
+            <HintPath>$(GameManaged)/Facepunch.Steamworks.Win64.dll</HintPath>
+            <Private>false</Private>
+        </Reference>
+        <!-- The HarmonyX that ships with BepInEx 5 (and in the APK); target of an Android override -->
+        <Reference Include="0Harmony">
+            <HintPath>$(BepInExCore)/0Harmony.dll</HintPath>
+            <Private>false</Private>
+        </Reference>
+    </ItemGroup>
+
+</Project>

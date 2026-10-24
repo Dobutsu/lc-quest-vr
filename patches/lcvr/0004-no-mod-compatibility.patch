@@ -1,0 +1,219 @@
+--- a/LCVR.csproj
++++ b/LCVR.csproj
+@@ -34,11 +34,9 @@
+   <ItemGroup>
+     <PackageReference Include="BepInEx.Analyzers" Version="1.*" PrivateAssets="all" />
+     <PackageReference Include="BepInEx.Core" Version="5.*" />
+-    <PackageReference Include="CullFactory" Version="1.0.4" />
+     <PackageReference Include="DissonanceVoip" Version="1.50.0-lc.1" />
+     <PackageReference Include="Facepunch.Steamworks" Version="2.3.3" />
+     <PackageReference Include="LethalCompany" Version="1.81.0" />
+-    <PackageReference Include="MoreCompany" Version="1.10.2" />
+     <PackageReference Include="Newtonsoft.Json" Version="13.0.2" />
+     <PackageReference Include="Unity.Animation.Rigging" Version="1.2.1" />
+     <PackageReference Include="Unity.InputSystem" Version="1.14.0" />
+--- a/Source/Compatibility/CullFactory/Patches.cs
++++ b/Source/Compatibility/CullFactory/Patches.cs
+@@ -1,64 +0,0 @@
+-using System;
+-using System.Collections;
+-using System.Collections.Generic;
+-using System.Reflection.Emit;
+-using CullFactory.Data;
+-using CullFactory.Extenders;
+-using GameNetcodeStuff;
+-using HarmonyLib;
+-using LCVR.Managers;
+-using LCVR.Patches;
+-using UnityEngine;
+-using static HarmonyLib.AccessTools;
+-
+-namespace LCVR.Compatibility.CullFactory;
+-
+-[LCVRPatch(dependency: Compat.CullFactory)]
+-[HarmonyPatch]
+-internal static class Patches
+-{
+-    /// <summary>
+-    /// Fix for CullFactory to include the VR helmet lights in the <see cref="DynamicObjects.allPlayerLights"/> array
+-    /// </summary>
+-    [HarmonyPatch(typeof(DynamicObjects), nameof(DynamicObjects.CollectAllPlayerLights))]
+-    [HarmonyPostfix]
+-    private static void OnCollectAllPlayerLights()
+-    {
+-        if (!VRSession.Instance)
+-            return;
+-        
+-        var clientId = VRSession.Instance.LocalPlayer.PlayerController.playerClientId;
+-        var lights = DynamicObjects.allPlayerLights[clientId];
+-        var cameraLights = VRSession.Instance.MainCamera.GetComponentsInChildren<Light>();
+-        
+-        DynamicObjects.allPlayerLights[clientId] = [..lights, ..cameraLights];
+-    }
+-
+-    /// <summary>
+-    /// Rather interesting patch that delays the player teleport code in CullFactory by a single frame
+-    ///
+-    /// Fixes items turning invisible due to CullFactory thinking they're inside/outside the factory whilst we are not
+-    /// </summary>
+-    [HarmonyPatch(typeof(TeleportExtender), nameof(TeleportExtender.OnPlayerTeleported))]
+-    [HarmonyTranspiler]
+-    private static IEnumerable<CodeInstruction> DelayPlayerTeleport(IEnumerable<CodeInstruction> instructions)
+-    {
+-        return new CodeMatcher(instructions)
+-            .MatchForward(false, new CodeMatch(OpCodes.Call,
+-                Method(typeof(DynamicObjects), nameof(DynamicObjects.OnPlayerTeleported))))
+-            .SetOperandAndAdvance(((Action<PlayerControllerB>)OnPlayerTeleport).Method)
+-            .InstructionEnumeration();
+-
+-        static void OnPlayerTeleport(PlayerControllerB player)
+-        {
+-            StartOfRound.Instance.StartCoroutine(OnPlayerTeleportedCoroutine(player));
+-        }
+-
+-        static IEnumerator OnPlayerTeleportedCoroutine(PlayerControllerB player)
+-        {
+-            yield return null;
+-            
+-            DynamicObjects.OnPlayerTeleported(player);
+-        }
+-    }
+-}
+--- a/Source/Compatibility/MoreCompany/MoreCompanyCompatibility.cs
++++ b/Source/Compatibility/MoreCompany/MoreCompanyCompatibility.cs
+@@ -1,54 +0,0 @@
+-﻿using System.Runtime.CompilerServices;
+-using GameNetcodeStuff;
+-using MoreCompany.Cosmetics;
+-using UnityEngine;
+-
+-namespace LCVR.Compatibility.MoreCompany;
+-
+-internal static class MoreCompanyCompatibility
+-{
+-    private static GameObject canvasUi;
+-
+-    private static bool NoCosmetics => CosmeticRegistry.cosmeticInstances.Count == 0;
+-    
+-    public static void SetupMoreCompanyUIMainMenu()
+-    {
+-        if (NoCosmetics)
+-            return;
+-        
+-        var overlay = GameObject.Find("TestOverlay(Clone)");
+-        var menuContainer = GameObject.Find("MenuContainer");
+-
+-        if (overlay == null)
+-            return;
+-
+-        canvasUi = overlay.Find("Canvas/GlobalScale");
+-        
+-        canvasUi.transform.parent = menuContainer.transform;
+-        canvasUi.transform.localPosition = new Vector3(-46, 6, -90);
+-        canvasUi.transform.localEulerAngles = Vector3.zero;
+-        canvasUi.transform.localScale = Vector3.one;
+-
+-        var activateButton = canvasUi.Find("ActivateButton");
+-        activateButton.transform.localPosition = new Vector3(activateButton.transform.localPosition.x,
+-            activateButton.transform.localPosition.y, 90);
+-
+-        overlay.Find("CanvasCam").SetActive(false);
+-    }
+-
+-    public static void SetupMoreCompanyUIInGame()
+-    {
+-        if (NoCosmetics)
+-            return;
+-        
+-        var canvasUi = GameObject.Find("Systems/UI/Canvas/GlobalScale");
+-
+-        canvasUi.transform.localPosition = new Vector3(0, 0, -90);
+-    }
+-
+-    [MethodImpl(MethodImplOptions.NoInlining)]
+-    public static void EnablePlayerCosmetics(PlayerControllerB player, bool enabled)
+-    {
+-        player.transform.Find("ScavengerModel/metarig").GetComponent<CosmeticApplication>().enabled = enabled;
+-    }
+-}
+\ No newline at end of file
+--- a/Source/Compatibility/MoreCompany/Patches.cs
++++ b/Source/Compatibility/MoreCompany/Patches.cs
+@@ -1,21 +0,0 @@
+-﻿using HarmonyLib;
+-using LCVR.Patches;
+-using MoreCompany.Cosmetics;
+-
+-namespace LCVR.Compatibility.MoreCompany;
+-
+-[LCVRPatch(dependency: Compat.MoreCompany)]
+-[HarmonyPatch]
+-internal static class MoreCompanyUIPatches
+-{
+-    /// <summary>
+-    /// Yeah... I'm completely lost on this one
+-    /// </summary>
+-    [HarmonyPatch(typeof(CosmeticRegistry), nameof(CosmeticRegistry.UpdateCosmeticsOnDisplayGuy))]
+-    [HarmonyPostfix]
+-    private static void AfterUpdateCosmetics()
+-    {
+-        CosmeticRegistry.displayGuyCosmeticApplication.spawnedCosmetics.Do(cosmetic =>
+-            cosmetic.transform.localScale *= CosmeticRegistry.menuIsInGame ? 1.75f : 0.45f);
+-    }
+-}
+\ No newline at end of file
+--- a/Source/Managers/SpectatingManager.cs
++++ b/Source/Managers/SpectatingManager.cs
+@@ -2,7 +2,6 @@
+ using GameNetcodeStuff;
+ using HarmonyLib;
+ using LCVR.Assets;
+-using LCVR.Compatibility.MoreCompany;
+ using LCVR.Input;
+ using LCVR.Networking;
+ using UnityEngine;
+@@ -199,9 +198,6 @@
+         localPlayer.isCrouching = SpectatedPlayer.IsCrouching();
+ 
+         HUDManager.Instance.SetSpectatingTextToPlayer(SpectatedPlayer);
+-
+-        if (Compat.IsLoaded(Compat.MoreCompany))
+-            MoreCompanyCompatibility.EnablePlayerCosmetics(SpectatedPlayer, false);
+     }
+ 
+     // ReSharper disable Unity.PerformanceAnalysis
+@@ -217,9 +213,6 @@
+         localPlayer.enabled = true;
+ 
+         HUDManager.Instance.SetSpectatingTextToPlayer(null);
+-
+-        if (Compat.IsLoaded(Compat.MoreCompany))
+-            MoreCompanyCompatibility.EnablePlayerCosmetics(SpectatedPlayer, true);
+ 
+         SpectatedPlayer = null;
+ 
+--- a/Source/UI/Environment/MainMenuEnvironment.cs
++++ b/Source/UI/Environment/MainMenuEnvironment.cs
+@@ -36,9 +36,6 @@
+ #endif
+ 
+         settingsManager = settingsPanel.GetComponent<SettingsManager>();
+-        
+-        if (Compat.IsLoaded(Compat.MoreCompany))
+-            Compatibility.MoreCompany.MoreCompanyCompatibility.SetupMoreCompanyUIMainMenu();
+     }
+ 
+     public void OpenSettingsMenu()
+--- a/Source/UI/VRHUD.cs
++++ b/Source/UI/VRHUD.cs
+@@ -484,10 +484,6 @@
+         
+         // Set up belt bag UI
+         FindObjectOfType<BeltBagInventoryUI>(true).gameObject.AddComponent<BeltBagUI>();
+-        
+-        // MoreCompany compatibility
+-        if (Compat.IsLoaded(Compat.MoreCompany))
+-            Compatibility.MoreCompany.MoreCompanyCompatibility.SetupMoreCompanyUIInGame();
+     }
+ 
+     private static void MoveToFront(Component component)

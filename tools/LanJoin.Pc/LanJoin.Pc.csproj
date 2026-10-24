@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <!-- BepInEx plugin for PC players who join a LAN host on another machine (vanilla LAN clients join only
+         127.0.0.1): an address field beside the main menu's "Join LAN session" -->
+    <PropertyGroup>
+        <TargetFramework>netstandard2.1</TargetFramework>
+        <Nullable>disable</Nullable>
+        <LangVersion>latest</LangVersion>
+        <AssemblyName>LcQuest.LanJoin</AssemblyName>
+        <RootNamespace>LcQuest</RootNamespace>
+        <GameManaged Condition="'$(GameManaged)' == ''">$(MSBuildThisFileDirectory)../../work/game/Lethal Company_Data/Managed</GameManaged>
+        <BepInExCore Condition="'$(BepInExCore)' == ''">$(MSBuildThisFileDirectory)../../work/downloads/BepInEx5/BepInEx/core</BepInExCore>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <Reference Include="BepInEx" HintPath="$(BepInExCore)/BepInEx.dll" Private="false" />
+        <Reference Include="Assembly-CSharp" HintPath="$(GameManaged)/Assembly-CSharp.dll" Private="false" />
+        <Reference Include="Unity.Netcode.Runtime" HintPath="$(GameManaged)/Unity.Netcode.Runtime.dll" Private="false" />
+        <Reference Include="Unity.Networking.Transport" HintPath="$(GameManaged)/Unity.Networking.Transport.dll" Private="false" />
+        <Reference Include="Unity.TextMeshPro" HintPath="$(GameManaged)/Unity.TextMeshPro.dll" Private="false" />
+        <Reference Include="UnityEngine" HintPath="$(GameManaged)/UnityEngine.dll" Private="false" />
+        <Reference Include="UnityEngine.CoreModule" HintPath="$(GameManaged)/UnityEngine.CoreModule.dll" Private="false" />
+        <Reference Include="UnityEngine.UI" HintPath="$(GameManaged)/UnityEngine.UI.dll" Private="false" />
+    </ItemGroup>
+</Project>

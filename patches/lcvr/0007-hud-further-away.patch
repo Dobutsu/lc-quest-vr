@@ -1,0 +1,60 @@
+--- a/Source/UI/VRHUD.cs	2026-10-24 15:45:52
++++ b/Source/UI/VRHUD.cs	2026-10-24 15:45:52
+@@ -90,7 +90,7 @@
+             transform =
+             {
+                 parent = transform,
+-                localScale = Vector3.one * 0.0007f
++                localScale = Vector3.one * 0.0007f * HeadCanvasDistance / 0.5f
+             }
+         }.AddComponent<Canvas>();
+         FaceCanvas.worldCamera = VRSession.Instance.MainCamera;
+@@ -102,7 +102,7 @@
+             transform =
+             {
+                 parent = transform,
+-                localScale = Vector3.one * 0.0007f
++                localScale = Vector3.one * 0.0007f * HeadCanvasDistance / 0.5f
+             }
+         }.AddComponent<Canvas>();
+         PitchLockedCanvas.worldCamera = VRSession.Instance.MainCamera;
+@@ -510,6 +510,12 @@
+             shit.m_sharedMaterial.shader = AssetManager.TMPAlwaysOnTop;
+         }
+     }
++
++    /// <summary>
++    /// How far the face and pitch-locked canvases float (LCVR: 0.5 m); scaled with it, so they keep their size in
++    /// view. At 0.5 m the tips and notifications felt too close to the eyes on the Quest
++    /// </summary>
++    private const float HeadCanvasDistance = 0.75f;
+ 
+     private void LateUpdate()
+     {
+@@ -519,7 +525,7 @@
+ 
+         // Face canvas        
+         FaceCanvas.transform.localPosition =
+-            Vector3.Lerp(FaceCanvas.transform.localPosition, camTransform.forward * 0.5f, 0.4f);
++            Vector3.Lerp(FaceCanvas.transform.localPosition, camTransform.forward * HeadCanvasDistance, 0.4f);
+         FaceCanvas.transform.rotation = Quaternion.Slerp(FaceCanvas.transform.rotation, camTransform.rotation, 0.4f);
+         
+         // Interaction canvas
+@@ -530,7 +536,7 @@
+         // Pitch locked canvas
+         if (Plugin.Config.EnablePitchLockedCanvas.Value)
+         {
+-            var fwd = new Vector3(camTransform.forward.x, 0, camTransform.forward.z).normalized * 0.5f;
++            var fwd = new Vector3(camTransform.forward.x, 0, camTransform.forward.z).normalized * HeadCanvasDistance;
+             var rot = Quaternion.Euler(0, camTransform.rotation.eulerAngles.y, 0);
+ 
+             PitchLockedCanvas.transform.localPosition =
+@@ -541,7 +547,7 @@
+         {
+             // If disabled, behave like FaceCanvas
+             
+-            PitchLockedCanvas.transform.localPosition = camTransform.forward * 0.5f;
++            PitchLockedCanvas.transform.localPosition = camTransform.forward * HeadCanvasDistance;
+             PitchLockedCanvas.transform.eulerAngles = camTransform.eulerAngles;
+         }
+     }

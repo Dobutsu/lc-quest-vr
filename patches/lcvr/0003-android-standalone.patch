@@ -1,0 +1,112 @@
+--- a/Source/Config.cs
++++ b/Source/Config.cs
+@@ -319,6 +319,14 @@
+     {
+         var asset = QualitySettings.renderPipeline as HDRenderPipelineAsset;
+ 
++        // Quest build: URP in place of HDRP (no volumetrics budget, XR set up by the build)
++        if (Plugin.IsAndroid && !asset)
++        {
++            QualitySettings.lodBias = Plugin.Config.LODBias.Value;
++            InputSystem.settings.defaultButtonPressPoint = Plugin.Config.ButtonPressPoint.Value;
++            return;
++        }
++
+         if (!asset)
+         {
+             Logger.LogError("Failed to apply render pipeline changes: Render pipeline is null??");
+--- a/Source/OpenXR.cs
++++ b/Source/OpenXR.cs
+@@ -53,6 +53,10 @@
+     /// </summary>
+     public static Runtimes GetRuntimes()
+     {
++        // Android: one runtime (the headset's), found by the Android OpenXR loader; nothing to enumerate
++        if (Plugin.IsAndroid)
++            return new Runtimes([]);
++
+         var runtimes = new HashSet<Runtime>();
+ 
+         foreach (var rt in LocateCommonRuntimes())
+@@ -346,7 +350,7 @@
+                 return false;
+             }
+ 
+-            if (Native.IsElevated())
++            if (!Plugin.IsAndroid && Native.IsElevated())
+             {
+                 Logger.LogWarning(
+                     "Application is elevated! Unable to override the XR runtime! Only the system default OpenXR runtime will be available.");
+@@ -481,6 +485,13 @@
+                 metaQuestTouch,
+                 oculusTouch
+             ];
++            // Android: the APK's own features (Meta Quest support, Touch profiles) must stay; add LCVR's to them
++            if (Plugin.IsAndroid)
++                s_Features = OpenXRSettings.Instance.features
++                    .Concat(s_Features.Where(feature =>
++                        OpenXRSettings.Instance.features.All(existing => existing.GetType() != feature.GetType())))
++                    .ToArray();
++
+             OpenXRSettings.Instance.features = s_Features;
+         }
+ 
+--- a/Source/Plugin.cs
++++ b/Source/Plugin.cs
+@@ -71,7 +71,7 @@
+ 
+         if (disableVr)
+             Logger.LogWarning("VR has been disabled by config or the `--disable-vr` command line flag");
+-        else if (Config.AskOnStartup.Value)
++        else if (Config.AskOnStartup.Value && !IsAndroid)
+         {
+             var response = Native.ShellMessageBox(IntPtr.Zero, IntPtr.Zero,
+                 "Do you want to run Lethal Company in VR mode?\n\nDon't forget to connect your headset first before launching the game in VR.\nLaunching the game without VR will still allow you to see other VR players' arm movements.\n\nPress 'Cancel' to close the game.",
+@@ -104,7 +104,8 @@
+         // Verify game assembly to detect compatible version
+         var allowUnverified = Environment.GetCommandLineArgs().Contains(SKIP_CHECKSUM_VAR);
+ 
+-        if (!VerifyGameVersion())
++        // Android: the game assembly is compiled into the player; the build checks its hash before baking
++        if (!IsAndroid && !VerifyGameVersion())
+         {
+             if (allowUnverified)
+             {
+@@ -118,7 +119,7 @@
+                 Logger.LogDebug(
+                     $"To bypass this check, add the following flag to your launch options in Steam: {SKIP_CHECKSUM_VAR}");
+                 
+-                if (Config.AskOnStartup.Value && !disableVr)
++                if (Config.AskOnStartup.Value && !disableVr && !IsAndroid)
+                     Native.ShellMessageBox(IntPtr.Zero, IntPtr.Zero,
+                         "Could not start Lethal Company in VR due to an unsupported or corrupt game version!\nThis usually happens if Lethal Company got updated recently.",
+                         "VR Startup Failed", 0x10);
+@@ -163,8 +164,14 @@
+ #endif
+ 
+         // Bring game window to front
+-        Native.BringGameWindowToFront();
++        if (!IsAndroid)
++            Native.BringGameWindowToFront();
+     }
++
++    /// <summary>
++    /// Standalone headset build (Quest): no Win32, no registry, no desktop window
++    /// </summary>
++    internal static bool IsAndroid => Application.platform == RuntimePlatform.Android;
+ 
+     internal static string GetCommitHash()
+     {
+--- a/Source/Rendering/VolumeManager.cs
++++ b/Source/Rendering/VolumeManager.cs
+@@ -124,7 +124,9 @@
+         CustomPostProcessInjectionPoint injectionPoint = CustomPostProcessInjectionPoint.AfterPostProcess
+     ) where T : CustomPostProcessVolumeComponent
+     {
+-        var pipeline = (HDRenderPipelineAsset)QualitySettings.renderPipeline;
++        // Quest build: URP draws the vignette from the volume itself (no HDRP custom post-process list)
++        if (QualitySettings.renderPipeline is not HDRenderPipelineAsset pipeline)
++            return;
+ 
+         if (pipeline.globalSettings.IsCustomPostProcessRegistered(typeof(T)))
+             return;

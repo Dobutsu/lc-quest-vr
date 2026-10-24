@@ -1,0 +1,3 @@
+[submodule "external/LCVR"]
+	path = external/LCVR
+	url = https://github.com/DaXcess/LCVR.git

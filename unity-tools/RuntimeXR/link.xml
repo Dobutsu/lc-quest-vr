@@ -1,0 +1,11 @@
+<!-- IL2CPP's linker keeps what the scenes and LCVR's bundles reference; nothing references the bootstrap (it runs via
+     RuntimeInitializeOnLoadMethod), and LCVR reaches XR types through reflection and ScriptableObject.CreateInstance -->
+<linker>
+  <assembly fullname="LCVR.Standalone" preserve="all"/>
+  <assembly fullname="LCVR" preserve="all"/>
+  <assembly fullname="BepInEx" preserve="all"/>
+  <assembly fullname="Unity.XR.Interaction.Toolkit" preserve="all"/>
+  <assembly fullname="Unity.XR.OpenXR" preserve="all"/>
+  <assembly fullname="Unity.XR.Management" preserve="all"/>
+  <assembly fullname="Unity.XR.CoreUtils" preserve="all"/>
+</linker>
