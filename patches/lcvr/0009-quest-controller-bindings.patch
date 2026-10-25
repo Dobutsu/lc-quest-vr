@@ -1,0 +1,70 @@
+--- a/Source/Assets/AssetManager.cs
++++ b/Source/Assets/AssetManager.cs
+@@ -81,6 +81,7 @@
+         SettingsPanel = assetsBundle.LoadAsset<GameObject>("SettingsPanel");
+         
+         VRActions = assetsBundle.LoadAsset<InputActionAsset>("VRActions");
++        QuestBindings.Apply(VRActions);
+         DefaultXRActions = assetsBundle.LoadAsset<InputActionAsset>("DefaultXRActions");
+         NullActions = assetsBundle.LoadAsset<InputActionAsset>("NullPlayerActions");
+ 
+--- a/Source/Patches/InputPatches.cs
++++ b/Source/Patches/InputPatches.cs
+@@ -33,6 +33,8 @@
+         playerInput.defaultActionMap = "Movement";
+         playerInput.neverAutoSwitchControlSchemes = false;
+         playerInput.notificationBehavior = PlayerNotifications.InvokeCSharpEvents;
++        playerInput.onControlsChanged += input =>
++            Logger.LogInfo($"Control scheme: {(string.IsNullOrEmpty(input.currentControlScheme) ? "none" : input.currentControlScheme)}");
+ 
+         // Re-enable player input because otherwise it's stuck at no devices in some cases
+         playerInput.enabled = true;
+--- a/Source/Input/QuestBindings.cs
++++ b/Source/Input/QuestBindings.cs
+@@ -0,0 +1,46 @@
++using System.Linq;
++using UnityEngine.InputSystem;
++
++namespace LCVR.Input;
++
++/// <summary>
++/// The Quest build's changes to LCVR's VR bindings, made once the bundle's actions are loaded (before any rebinding
++/// overrides are applied on top)
++/// </summary>
++internal static class QuestBindings
++{
++    /// <summary>
++    /// Binding groups of the Quest's controllers: Touch (Quest 2, and Pico, which maps its controllers to Touch) and
++    /// Touch Plus (Quest 3)
++    /// </summary>
++    private static readonly string[] Groups = ["Oculus", "Meta Quest"];
++
++    public static void Apply(InputActionAsset actions)
++    {
++        // Quest 3's controllers come as Touch Plus, which no control scheme asked for. The player then had no scheme,
++        // and the bindings of every controller worked at once (the Vive's jump on the left trigger, among others)
++        actions.RemoveControlScheme("Meta Quest");
++        actions.AddControlScheme(new InputControlScheme("Meta Quest", [
++            Device("<QuestProTouchController>{LeftHand}"),
++            Device("<QuestTouchPlusController>{LeftHand}", true),
++            Device("<QuestProTouchController>{RightHand}"),
++            Device("<QuestTouchPlusController>{RightHand}", true)
++        ], "Meta Quest"));
++
++        // X opens the menu (as before), Y scans, the left trigger sprints, the left menu button resets the height
++        Rebind(actions, "PingScan", "<XRController>{LeftHand}/secondaryButton");
++        Rebind(actions, "Sprint", "<XRController>{LeftHand}/trigger");
++        Rebind(actions, "Reset Height", "<XRController>{LeftHand}/menu");
++    }
++
++    private static InputControlScheme.DeviceRequirement Device(string path, bool or = false) =>
++        new() { controlPath = path, isOR = or };
++
++    private static void Rebind(InputActionAsset actions, string actionName, string path)
++    {
++        var action = actions.FindAction(actionName, true);
++        for (var i = 0; i < action.bindings.Count; i++)
++            if (action.bindings[i].groups?.Split(';').Any(Groups.Contains) == true)
++                action.ChangeBinding(i).WithPath(path).WithProcessors("");
++    }
++}

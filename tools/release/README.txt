@@ -23,6 +23,7 @@ Joining friends who host the normal way (Online, Steam), with no mods on their s
      their name in the bridge window.
   3. On the headset: main menu, the address panel on the right: "Via Steam bridge: On", type the address the bridge
      window shows, then "Join LAN session".
+  Step by step, with what to do when it fails: STEAM-BRIDGE.txt (English and Russian).
   If it does not work, send LCQuestSteamBridge.log (next to the exe).
 
 LAN games (a PC hosts in LAN mode)

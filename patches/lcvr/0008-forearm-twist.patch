@@ -1,0 +1,138 @@
+--- a/Source/Player/VRPlayer.cs
++++ b/Source/Player/VRPlayer.cs
+@@ -318,6 +318,7 @@
+         localLeftArmVRRig.data.hintWeight = 1;
+         localLeftArmVRRig.data.targetRotationWeight = 1;
+         localLeftArmVRRig.data.targetPositionWeight = 1;
++        ForearmTwist.Attach(localLeftArmVRRig);
+         localLeftArmVRRig.weight = 1;
+ 
+         RigTrackerLocal.leftHand = new RigTracker.Tracker
+@@ -366,6 +367,7 @@
+         localRightArmVRRig.data.hintWeight = 1;
+         localRightArmVRRig.data.targetRotationWeight = 1;
+         localRightArmVRRig.data.targetPositionWeight = 1;
++        ForearmTwist.Attach(localRightArmVRRig);
+         localRightArmVRRig.weight = 1;
+ 
+         RigTrackerLocal.rightHand = new RigTracker.Tracker
+@@ -441,6 +443,7 @@
+         leftArmVRRig.data.hintWeight = 1;
+         leftArmVRRig.data.targetRotationWeight = 1;
+         leftArmVRRig.data.targetPositionWeight = 1;
++        ForearmTwist.Attach(leftArmVRRig);
+ 
+         RigTracker.leftHand = new RigTracker.Tracker
+         {
+@@ -488,6 +491,7 @@
+         rightArmVRRig.data.hintWeight = 1;
+         rightArmVRRig.data.targetRotationWeight = 1;
+         rightArmVRRig.data.targetPositionWeight = 1;
++        ForearmTwist.Attach(rightArmVRRig);
+ 
+         RigTracker.rightHand = new RigTracker.Tracker
+         {
+--- a/Source/Networking/VRNetPlayer.cs
++++ b/Source/Networking/VRNetPlayer.cs
+@@ -195,6 +195,7 @@
+         leftArmVRRig.data.hintWeight = 1;
+         leftArmVRRig.data.targetRotationWeight = 1;
+         leftArmVRRig.data.targetPositionWeight = 1;
++        ForearmTwist.Attach(leftArmVRRig);
+         leftArmVRRig.weight = 1;
+ 
+         // Setting up the right arm
+@@ -227,6 +228,7 @@
+         rightArmVRRig.data.hintWeight = 1;
+         rightArmVRRig.data.targetRotationWeight = 1;
+         rightArmVRRig.data.targetPositionWeight = 1;
++        ForearmTwist.Attach(rightArmVRRig);
+         rightArmVRRig.weight = 1;
+ 
+         GetComponentInChildren<RigBuilder>().Build();
+--- a/Source/Player/ForearmTwist.cs
++++ b/Source/Player/ForearmTwist.cs
+@@ -0,0 +1,83 @@
++using System;
++using UnityEngine;
++using UnityEngine.Animations.Rigging;
++
++namespace LCVR.Player;
++
++/// <summary>
++/// Moves part of the hand's roll around the forearm onto the forearm bone. The player model has no forearm twist
++/// bones, so with the arm IK the whole roll ends up in the wrist, and the mesh there wrings like a candy wrapper.
++/// The hand keeps its pose in the world: only the forearm turns along with it
++/// </summary>
++// After the animator and the arm IK, and after RigTracker and VRPlayer
++[DefaultExecutionOrder(100)]
++public class ForearmTwist : MonoBehaviour
++{
++    /// <summary>
++    /// Share of the wrist's roll the forearm takes: 0 is LCVR as it was, 1 moves all of it, and the elbow wrings
++    /// instead
++    /// </summary>
++    public static float Share = 0.5f;
++
++    private TwoBoneIKConstraint constraint;
++    private Transform lowerArm;
++    private Transform hand;
++    private Quaternion handRest;
++
++    public static void Attach(TwoBoneIKConstraint constraint)
++    {
++        var twist = constraint.gameObject.AddComponent<ForearmTwist>();
++        twist.constraint = constraint;
++        twist.lowerArm = constraint.data.mid;
++        twist.hand = constraint.data.tip;
++        twist.handRest = twist.RestRotation();
++    }
++
++    /// <summary>
++    /// The hand's rotation relative to the forearm in the skin's bind pose (the pose the mesh doesn't wring in), or
++    /// the current one if no skin uses these bones
++    /// </summary>
++    private Quaternion RestRotation()
++    {
++        foreach (var skin in hand.root.GetComponentsInChildren<SkinnedMeshRenderer>(true))
++        {
++            var lower = Array.IndexOf(skin.bones, lowerArm);
++            var tip = Array.IndexOf(skin.bones, hand);
++            if (lower < 0 || tip < 0 || skin.sharedMesh == null)
++                continue;
++
++            var bindPoses = skin.sharedMesh.bindposes;
++            return (bindPoses[lower] * bindPoses[tip].inverse).rotation;
++        }
++
++        return hand.localRotation;
++    }
++
++    private void LateUpdate()
++    {
++        // The VR rig was torn down (a VR player left)
++        if (constraint == null)
++        {
++            Destroy(this);
++            return;
++        }
++
++        var weight = Share * constraint.weight * constraint.data.targetRotationWeight;
++        if (weight <= 0)
++            return;
++
++        // The roll axis runs along the forearm, from the elbow to the wrist (in the forearm's space)
++        var axis = hand.localPosition.normalized;
++
++        // Roll of the hand away from its rest rotation, around that axis (the twist part of a swing-twist split)
++        var delta = Quaternion.Inverse(handRest) * hand.localRotation;
++        var restAxis = Quaternion.Inverse(handRest) * axis;
++        var roll = 2 * Mathf.Atan2(Vector3.Dot(new Vector3(delta.x, delta.y, delta.z), restAxis), delta.w) *
++                   Mathf.Rad2Deg;
++
++        // Turning the forearm around its own axis leaves the wrist where it is; the hand turns back by as much
++        var turn = Quaternion.AngleAxis(Mathf.DeltaAngle(0, roll) * weight, axis);
++        lowerArm.localRotation *= turn;
++        hand.localRotation = Quaternion.Inverse(turn) * hand.localRotation;
++    }
++}

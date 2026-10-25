@@ -10,6 +10,9 @@
 #   0005-no-hdrp-default-volume  the VR launch scene works without HDRP's hidden "Default Volume" object
 #   0006-android-lan-only  the VR launch screen offers only LOCAL (no Steam on the headset: Online hung in InitScene)
 #   0007-hud-further-away  tips, notifications and the face HUD at 0.75 m instead of 0.5 m, scaled to keep their size
+#   0008-forearm-twist  part of the wrist's roll moves onto the forearm (no twist bones: the wrist wrung like a candy wrapper)
+#   0009-quest-controller-bindings  Quest 3's Touch Plus controllers get the Meta Quest scheme (with none, every controller's
+#        bindings worked at once); X menu, Y scan, left trigger sprint, left menu button height reset
 set -euo pipefail
 
 root="$(cd "$(dirname "$0")/.." && pwd)"

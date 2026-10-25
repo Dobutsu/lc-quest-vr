@@ -96,3 +96,16 @@ Steam logged in as the Quest player and LCQuestSteamBridge.exe running (docs/mul
 - [ ] Pico 4: lc-pico-vr.apk starts, the microphone prompt comes in the main menu and voice works (docs/pico.md)
 - [ ] Diagnostic build (lc-quest-vr-diag, DiagnosticLog) on a Quest: files/logs/<time>/game.txt fills with stats every
       5 s and logcat.txt with the process's log (logcat started through Runtime.exec)
+
+## Forearm twist (patches/lcvr/0008, ForearmTwist.Share 0.5)
+
+- [x] Worn, first person: rolling the palms up and down (and holding an item) turns the forearm along with the hand;
+      the wrist no longer wrings like a candy wrapper, the elbow doesn't wring instead. Try other shares with
+      `static:LCVR.Player.ForearmTwist.Share <0..1>` (QuestTuning). 25.10, share 0.5: the user: better
+- [ ] Another VR player seen from the side (VRNetPlayer): the same, and the arms recover when they leave
+
+## Quest controller bindings (patches/lcvr/0009)
+
+- [ ] Quest 3 (Touch Plus): the log says `Control scheme: Meta Quest` (Quest 2 / Pico: `Oculus`), not `none`
+- [ ] Worn: X opens the menu only, Y scans only, the left trigger sprints only (no jump, no scan), A jumps, the left
+      menu button resets the height; LCVR's controls menu shows "Detected controllers: Meta Quest" and these icons

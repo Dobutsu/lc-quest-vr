@@ -41,3 +41,9 @@ shim missed HdrpBridge's members (`fadeDistance`, `volumetricDimmer`...) and the
 `latest.json`. Release key: `~/.config/lcquest/release-signing-key.pem` (made on the first release; back it up), public
 half `builder/release-public-key.txt`. Before anything goes public: `scripts/publish_check.py` on the tree, the history
 that is pushed, and the zips (it needs `work/game` or `--game`).
+
+**Published 2026-10-24:** the public repository https://github.com/Dobutsu/lc-quest-vr (GPL-3.0; one fresh commit,
+the full history stays in the private lc-quest) and v0.1.0 as a pre-release with the builder and the Steam bridge. The
+public history is made from this repository's tree (a clone, `git checkout --orphan`, one commit as
+`39274204+Dobutsu@users.noreply.github.com`) after `publish_check.py --history` passes. Not written to: Zeekerss or
+DaXcess (the author's decision). Open: a full build on Windows.

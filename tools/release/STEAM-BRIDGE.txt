@@ -1,0 +1,89 @@
+LC Quest Steam bridge
+=====================
+
+[EN] Join friends who host the usual Online (Steam) game of Lethal Company from your Quest or Pico.
+[RU] Как с Quest или Pico зайти к друзьям в обычную Online-игру (Steam) Lethal Company. (Русский текст ниже.)
+
+
+ENGLISH
+-------
+
+The headset has no Steam, so it cannot join a Steam lobby by itself. The bridge does it for the headset: it runs on
+your PC next to Steam, joins your friend's lobby with your account and passes the game's traffic between the host and
+the headset. Your friends need nothing: no mods, nothing to install.
+
+You need
+- A Windows PC with Steam, logged in to YOUR account, the one that owns Lethal Company. Not the host's PC, not the
+  host's account.
+- The PC and the headset on the same network (the same Wi-Fi router, or the PC by cable to that router).
+- The PC stays on while you play. You do not need to start Lethal Company on the PC.
+
+Steps
+1. Start Steam on the PC. Unzip SteamBridge.zip anywhere and run LCQuestSteamBridge.exe.
+   If Windows asks about the firewall, allow it on private networks.
+   The window shows your Steam name and the PC's address, for example 192.168.1.84. Steam now shows you playing
+   Lethal Company.
+2. Your friend starts Lethal Company, Host → Online, and stays on the ship in orbit.
+3. Pick their lobby, one of:
+   - the friend invites you from the game, and you accept the invite in Steam on the PC ("Join game");
+   - or click their name in the bridge window, under "Friends in Lethal Company lobbies";
+   - if only one friend is in a lobby, the bridge picks that one by itself.
+4. On the headset: first screen LOCAL. In the main menu, the address panel to the right of the buttons:
+   "Via Steam bridge: On", type the address from the bridge window on the panel's keypad, then "Join LAN session".
+5. The line under the "Via Steam bridge" key says what happened: "Joined ..." or why not. The bridge window's Status
+   says "Playing in ...'s lobby".
+
+To host from the headset or join a LAN game, switch "Via Steam bridge" back to Off.
+
+If it does not work
+- "No bridge at ...": the address is wrong, the bridge is not running, the PC and headset are on different networks,
+  or the firewall blocks it (allow LCQuestSteamBridge.exe on private networks).
+- "No friend ... is in a Lethal Company lobby": the friend has not hosted yet, or is not in your Steam friends list.
+- "Several friends are in lobbies": click the right one in the bridge window.
+- "The host has landed or is still loading": join while the ship is in orbit.
+- "The host plays version ...": everyone needs the same game version.
+- Steam is not available: start Steam and log in before the bridge; "Try again" in the window.
+- Anything else: send LCQuestSteamBridge.log, next to the exe.
+
+One bridge serves one headset. Two Quest players need two PCs, each with its own Steam account.
+
+
+РУССКИЙ
+-------
+
+На шлеме нет Steam, поэтому сам он в Steam-лобби зайти не может. Это делает мост: он работает на вашем ПК рядом со
+Steam, заходит в лобби друга под вашим аккаунтом и передаёт игровой трафик между хостом и шлемом. Друзьям ничего не
+нужно: ни модов, ни установок.
+
+Что нужно
+- ПК с Windows и Steam, в котором открыт ВАШ аккаунт, тот, где куплена Lethal Company. Не ПК хоста и не аккаунт хоста.
+- ПК и шлем в одной сети (один Wi-Fi-роутер, или ПК подключён кабелем к этому роутеру).
+- ПК должен быть включён, пока вы играете. Запускать Lethal Company на ПК не нужно.
+
+Порядок
+1. Запустите Steam на ПК. Распакуйте SteamBridge.zip в любую папку и запустите LCQuestSteamBridge.exe.
+   Если Windows спросит про брандмауэр, разрешите доступ в частных сетях.
+   В окне будет ваше имя в Steam и адрес ПК, например 192.168.1.84. Steam покажет, что вы играете в Lethal Company.
+2. Друг запускает Lethal Company, Host → Online, и остаётся на корабле на орбите.
+3. Выберите его лобби, любым способом:
+   - друг приглашает вас из игры, а вы принимаете приглашение в Steam на ПК («Присоединиться к игре»);
+   - или нажмите его имя в окне моста, в списке «Friends in Lethal Company lobbies»;
+   - если в лобби только один друг, мост выберет его сам.
+4. На шлеме: на первом экране LOCAL. В главном меню, в панели адреса справа от кнопок: «Via Steam bridge: On»,
+   наберите на клавишах панели адрес из окна моста, затем «Join LAN session».
+5. Строка под кнопкой «Via Steam bridge» покажет результат: «Joined ...» или причину неудачи. В окне моста в поле
+   Status будет «Playing in ...'s lobby».
+
+Чтобы хостить со шлема или зайти в LAN-игру, верните «Via Steam bridge» в Off.
+
+Если не работает
+- «No bridge at ...»: неверный адрес, мост не запущен, ПК и шлем в разных сетях, или мешает брандмауэр (разрешите
+  LCQuestSteamBridge.exe в частных сетях).
+- «No friend ... is in a Lethal Company lobby»: друг ещё не захостил или его нет в вашем списке друзей Steam.
+- «Several friends are in lobbies»: выберите нужного в окне моста.
+- «The host has landed or is still loading»: заходите, пока корабль на орбите.
+- «The host plays version ...»: у всех должна быть одна версия игры.
+- Steam не запущен: запустите Steam и войдите до запуска моста, затем «Try again» в окне.
+- Что-то другое: пришлите файл LCQuestSteamBridge.log, он лежит рядом с exe.
+
+Один мост обслуживает один шлем. Двум игрокам на Quest нужны два ПК, каждый со своим аккаунтом Steam.

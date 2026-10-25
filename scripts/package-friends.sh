@@ -7,7 +7,7 @@
 #   LanJoin-PC.zip    BepInEx 5 (x64) and the LanJoin plugin, unpacked into the game's folder by PC players who join
 #                     someone else's LAN host (the host needs nothing)
 #   SteamBridge.zip   the Steam bridge (tools/SteamBridge), for a Quest player who joins a friend's Online lobby: runs
-#                     on a Windows PC with Steam logged in as that player
+#                     on a Windows PC with Steam logged in as that player; with STEAM-BRIDGE.txt (also next to it)
 #   scripts/package-friends.sh
 set -euo pipefail
 
@@ -31,6 +31,7 @@ rm -f "$out/SteamBridge.zip"
 "$DOTNET_ROOT/dotnet" publish "$root/tools/SteamBridge" -c Release -r win-x64 -v quiet -nologo | { grep -E " error " || true; }
 # One exe: Steamworks' steam_api64.dll and Avalonia's native libraries are bundled and unpacked on start
 (cd "$root/tools/SteamBridge/bin/Release/net8.0/win-x64/publish" && zip -q "$out/SteamBridge.zip" LCQuestSteamBridge.exe)
+(cd "$root/tools/release" && zip -q "$out/SteamBridge.zip" STEAM-BRIDGE.txt)
 
 cp "$root/work/build/lc-quest-vr.apk" "$out/lc-quest-vr.apk"
 "$root/scripts/make-pico.sh" >/dev/null
@@ -40,4 +41,5 @@ if [ -f "$root/work/build/lc-quest-vr-diag.apk" ]; then
     cp "$root/work/pico/lc-quest-vr-diag-pico-ovrp3.3.0.apk" "$out/lc-pico-vr-diag.apk"
 fi
 cp "$root/tools/release/README.txt" "$out/README.txt"
+cp "$root/tools/release/STEAM-BRIDGE.txt" "$out/STEAM-BRIDGE.txt"
 ls -la "$out"
