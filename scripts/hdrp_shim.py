@@ -47,7 +47,7 @@ YAML_SUFFIXES = {".unity", ".prefab", ".asset", ".mat", ".controller", ".playabl
 
 
 def type_names(dll: Path) -> dict[int, str]:
-    md = dnfile.dnPE(str(dll)).net.mdtables
+    md = dnfile.dnPE(data=dll.read_bytes()).net.mdtables
     text = lambda v: str(v.value) if hasattr(v, "value") else str(v)
     return {script_file_id(text(r.TypeNamespace), text(r.TypeName)): f"{text(r.TypeNamespace)}.{text(r.TypeName)}".lstrip(".")
             for r in md.TypeDef.rows}
@@ -55,7 +55,7 @@ def type_names(dll: Path) -> dict[int, str]:
 
 def references(dll: Path, assembly: str) -> bool:
     try:
-        refs = dnfile.dnPE(str(dll)).net.mdtables.AssemblyRef
+        refs = dnfile.dnPE(data=dll.read_bytes()).net.mdtables.AssemblyRef
     except Exception:  # noqa: BLE001 - native or unreadable DLL
         return False
     return any(str(r.Name) == assembly for r in (refs.rows if refs else []))

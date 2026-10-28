@@ -89,7 +89,7 @@ def sort_key(version: str):
 
 
 def dll_types(path: Path) -> set[str]:
-    pe = dnfile.dnPE(str(path))
+    pe = dnfile.dnPE(data=path.read_bytes())
     names = set()
     for row in pe.net.mdtables.TypeDef.rows:
         name = str(row.TypeName.value if hasattr(row.TypeName, "value") else row.TypeName).split("`")[0]
@@ -104,7 +104,7 @@ MEMBER_DECL = re.compile(
 
 
 def dll_members(path: Path) -> set[str]:
-    md = dnfile.dnPE(str(path)).net.mdtables
+    md = dnfile.dnPE(data=path.read_bytes()).net.mdtables
     text = lambda v: str(v.value) if hasattr(v, "value") else str(v)
     names = set()
     for table in (md.MethodDef, md.Field, md.Property):

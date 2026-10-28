@@ -127,7 +127,7 @@ def unitypackage_shaders(package: Path, assets: Path, write: bool) -> dict[str, 
 
 
 def dll_types(path: Path) -> list[tuple[str, str]]:
-    pe = dnfile.dnPE(str(path))
+    pe = dnfile.dnPE(data=path.read_bytes())
     md = pe.net.mdtables
     nested = {row.NestedClass.row_index for row in (md.NestedClass.rows if md.NestedClass else [])}
     text = lambda v: str(v.value) if hasattr(v, "value") else str(v)

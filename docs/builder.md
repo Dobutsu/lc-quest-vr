@@ -59,3 +59,5 @@ connection opens, then no data). Downloads now give up on a connection after 45 
 and try the pin's `mirrors` (kit.json, NuGet packages only so far). The copies live in the public repository's
 pre-release `mirror` (a pre-release, so `releases/latest` still points at the builder); a new pinned file is added there
 with `gh release upload mirror <file> -R Dobutsu/lc-quest-vr`.
+
+**v0.1.2, 2026-10-28:** the stalled-download fix and the mirror above; the APK is unchanged.
