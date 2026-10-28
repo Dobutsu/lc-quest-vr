@@ -258,7 +258,8 @@ internal static partial class Strings
         ["error.unexpected"] = "An unexpected error: {0}",
 
         ["err.download"] =
-            "A download failed. Check your internet connection and try again: the build continues where it stopped.",
+            "A download failed. Check your internet connection and try again: the build continues where it stopped. If it " +
+            "fails again, your network may block the server: turn on a VPN, or download the file yourself as shown below.",
         ["err.download-hash"] =
             "A downloaded file is damaged (its checksum does not match). Try again; if it happens again, create a report.",
         ["err.assetripper-start"] =

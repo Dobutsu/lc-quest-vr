@@ -62,7 +62,7 @@ public sealed class ThirdParty
         var package = pins.NuGet.FirstOrDefault(p => p.Id.Equals(id, StringComparison.OrdinalIgnoreCase))
                       ?? throw new BuildException($"kit.json has no NuGet package {id}");
         var dir = Path.Combine(workspace.Deps, "nuget", package.Id, package.Version);
-        await EnsureExtractedAsync(package.Url, package.Sha256, $"{package.Id}.{package.Version}.nupkg", dir, ct);
+        await EnsureExtractedAsync(package.Urls, package.Sha256, $"{package.Id}.{package.Version}.nupkg", dir, ct);
         return Path.Combine(dir, package.Lib.Replace('/', Path.DirectorySeparatorChar));
     }
 
@@ -82,7 +82,7 @@ public sealed class ThirdParty
     {
         var pin = pins.Ovrport ?? throw new BuildException("kit.json has no ovrport download");
         var dir = Path.Combine(workspace.Tools, $"ovrport-{pin.Version}");
-        await EnsureExtractedAsync(pin.Url, pin.Sha256, $"ovrport-cli-{pin.Version}.zip", dir, ct);
+        await EnsureExtractedAsync([pin.Url], pin.Sha256, $"ovrport-cli-{pin.Version}.zip", dir, ct);
         return Directory.EnumerateFiles(dir, "*.jar").FirstOrDefault()
                ?? throw new BuildException($"ovrport's jar not found in {dir}");
     }
@@ -99,25 +99,25 @@ public sealed class ThirdParty
     {
         var dir = Path.Combine(workspace.Tools, $"{name}-{version}");
         var archiveName = Path.GetFileName(new Uri(file.Url).AbsolutePath);
-        await EnsureExtractedAsync(file.Url, file.Sha256, archiveName, dir, ct);
+        await EnsureExtractedAsync([file.Url], file.Sha256, archiveName, dir, ct);
         return dir;
     }
 
     private async Task<string> ReleaseAsync(string name, PinnedRelease release, string extension, CancellationToken ct)
     {
         var dir = Path.Combine(workspace.Deps, $"{name}-{release.Version}");
-        await EnsureExtractedAsync(release.Url, release.Sha256, $"{name}-{release.Version}{extension}", dir, ct);
+        await EnsureExtractedAsync([release.Url], release.Sha256, $"{name}-{release.Version}{extension}", dir, ct);
         return dir;
     }
 
     /// <summary>Downloads (if needed) and extracts (once per archive hash) into <paramref name="dir"/></summary>
-    private async Task EnsureExtractedAsync(string url, string sha256, string archiveName, string dir, CancellationToken ct)
+    private async Task EnsureExtractedAsync(string[] urls, string sha256, string archiveName, string dir, CancellationToken ct)
     {
         var marker = Path.Combine(dir, ".repoquest-sha256");
         if (File.Exists(marker) && File.ReadAllText(marker).Trim() == sha256)
             return;
         var archive = Path.Combine(workspace.Downloads, archiveName);
-        await Downloader.DownloadAsync(url, archive, sha256, Report(archiveName), ct);
+        await Downloader.DownloadAsync(urls, archive, sha256, Report(archiveName), ct);
         await Archive.ExtractAsync(archive, dir, ct);
         File.WriteAllText(marker, sha256);
     }

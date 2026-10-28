@@ -56,7 +56,10 @@
         "version": "5.4.20",
         "url": "https://nuget.bepinex.dev/v3/package/bepinex.baselib/5.4.20/bepinex.baselib.5.4.20.nupkg",
         "sha256": "de7bd7bed7e27f7f92682ea0ad2c1c9ed2740101e1e73f1d43ef0a6fbd615ecd",
-        "lib": "lib/netstandard2.0"
+        "lib": "lib/netstandard2.0",
+        "mirrors": [
+          "https://github.com/Dobutsu/lc-quest-vr/releases/download/mirror/bepinex.baselib.5.4.20.nupkg"
+        ]
       }
     ],
     "builtinShaders": {

@@ -15,7 +15,13 @@ public sealed record PinnedTool(string Version, Dictionary<string, PinnedFile> F
 
 public sealed record PinnedRelease(string Version, string Url, string Sha256);
 
-public sealed record PinnedPackage(string Id, string Version, string Url, string Sha256, string Lib);
+/// <param name="Mirrors">The same file elsewhere, tried when <paramref name="Url"/> does not work (nuget.bepinex.dev
+/// sits behind Cloudflare, which some networks stall)</param>
+public sealed record PinnedPackage(string Id, string Version, string Url, string Sha256, string Lib,
+    string[]? Mirrors = null)
+{
+    public string[] Urls => [Url, .. Mirrors ?? []];
+}
 
 public sealed record KitDownloads(
     PinnedTool AssetRipper,

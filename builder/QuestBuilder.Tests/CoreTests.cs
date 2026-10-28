@@ -171,6 +171,72 @@ public sealed class CoreTests : IDisposable
         Assert.Equal("zip", File.ReadAllText(downloaded));
     }
 
+    [Fact]
+    public async Task Download_DropsAStalledServerAndUsesTheMirror()
+    {
+        var body = Encoding.ASCII.GetBytes(new string('x', 100_000));
+        // The first server sends the headers and a little of the body, then nothing (what a throttled Cloudflare does)
+        using var stalled = Serve(async stream =>
+        {
+            await stream.WriteAsync(Encoding.ASCII.GetBytes($"HTTP/1.1 200 OK\r\nContent-Length: {body.Length}\r\n\r\n"));
+            await stream.WriteAsync(body.AsMemory(0, 16_000));
+            await Task.Delay(TimeSpan.FromMinutes(1));
+        });
+        using var mirror = Serve(async stream =>
+        {
+            await stream.WriteAsync(Encoding.ASCII.GetBytes($"HTTP/1.1 200 OK\r\nContent-Length: {body.Length}\r\n\r\n"));
+            await stream.WriteAsync(body);
+        });
+        var (stallTimeout, retryDelay) = (Downloader.StallTimeout, Downloader.RetryDelay);
+        (Downloader.StallTimeout, Downloader.RetryDelay) = (TimeSpan.FromSeconds(1), TimeSpan.Zero);
+        try
+        {
+            var target = Path.Combine(temp, "file.bin");
+            var sha256 = Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(body)).ToLowerInvariant();
+            await Downloader.DownloadAsync([stalled.Url, mirror.Url], target, sha256);
+            Assert.Equal(body, File.ReadAllBytes(target));
+
+            var error = await Assert.ThrowsAsync<BuildException>(() =>
+                Downloader.DownloadAsync(stalled.Url, Path.Combine(temp, "other.bin"), sha256));
+            Assert.Equal("download", error.Code);
+        }
+        finally
+        {
+            (Downloader.StallTimeout, Downloader.RetryDelay) = (stallTimeout, retryDelay);
+        }
+    }
+
+    /// <summary>A local HTTP server that answers every connection with <paramref name="respond"/></summary>
+    private static TestServer Serve(Func<System.Net.Sockets.NetworkStream, Task> respond)
+    {
+        var listener = new System.Net.Sockets.TcpListener(System.Net.IPAddress.Loopback, 0);
+        listener.Start();
+        _ = Task.Run(async () =>
+        {
+            while (true)
+            {
+                var client = await listener.AcceptTcpClientAsync();
+                _ = Task.Run(async () =>
+                {
+                    using (client)
+                    {
+                        var stream = client.GetStream();
+                        await stream.ReadAsync(new byte[4096]);  // the request; its contents do not matter
+                        await respond(stream);
+                    }
+                });
+            }
+        });
+        return new TestServer(listener);
+    }
+
+    private sealed class TestServer(System.Net.Sockets.TcpListener listener) : IDisposable
+    {
+        public string Url => $"http://127.0.0.1:{((System.Net.IPEndPoint)listener.LocalEndpoint).Port}/file.bin";
+
+        public void Dispose() => listener.Stop();
+    }
+
     private static string RepoRoot()
     {
         var dir = new DirectoryInfo(AppContext.BaseDirectory);

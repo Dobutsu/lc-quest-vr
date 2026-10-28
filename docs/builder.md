@@ -47,3 +47,15 @@ the full history stays in the private lc-quest) and v0.1.0 as a pre-release with
 public history is made from this repository's tree (a clone, `git checkout --orphan`, one commit as
 `39274204+Dobutsu@users.noreply.github.com`) after `publish_check.py --history` passes. Not written to: Zeekerss or
 DaXcess (the author's decision). Open: a full build on Windows.
+
+**v0.1.1, 2026-10-25:** LCVR patches 0008 (forearm twist) and 0009 (Quest controller bindings). Published as a regular
+release, not a pre-release: builders look for `releases/latest/download/latest.json`, and GitHub's "latest" skips
+pre-releases (with only v0.1.0 that URL was a 404, so 0.1.0 never saw an update). An update to the public repository:
+clone it, replace its tree with `git archive HEAD` of this repository (keep the `external/LCVR` gitlink:
+`git reset HEAD external/LCVR`), `publish_check.py` on the tree and `--history`, one commit as the noreply address.
+
+**Mirror, 2026-10-28:** a player in Russia waited forever on bepinex.baselib from nuget.bepinex.dev (Cloudflare; the
+connection opens, then no data). Downloads now give up on a connection after 45 s without data (`Downloader.StallTimeout`)
+and try the pin's `mirrors` (kit.json, NuGet packages only so far). The copies live in the public repository's
+pre-release `mirror` (a pre-release, so `releases/latest` still points at the builder); a new pinned file is added there
+with `gh release upload mirror <file> -R Dobutsu/lc-quest-vr`.
