@@ -54,6 +54,10 @@ sed -i '' '/^    UnityEngine.Rendering.HighDefinition.HDRenderPipeline: /d' "$pr
 # Fog variants: "Automatic" strips them from every shader since no scene enables fog; HdrpBridge fogs at runtime
 sed -i '' 's/^  m_FogStripping: [0-9]*$/  m_FogStripping: 1/' "$project/ProjectSettings/GraphicsSettings.asset"
 
+# No mouse cursor on the headset. The editor on Windows applies the game's cursor (ItStealsCursor) at startup, and as
+# an Android texture it is no valid cursor: the error it logs fails the LCVR bundle build
+sed -i '' 's/^  defaultCursor: .*$/  defaultCursor: {fileID: 0}/' "$project/ProjectSettings/ProjectSettings.asset"
+
 android_meta() { sed "s/{GUID}/$(printf '%s' "$2" | md5 -q)/" "$root/unity-tools/Plugins/android-managed.meta.template" > "$1.meta"; }
 if [ "$vr" = 1 ]; then
     step "baked game assemblies"

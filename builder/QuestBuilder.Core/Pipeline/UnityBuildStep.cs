@@ -63,7 +63,7 @@ public sealed partial class UnityBuildStep : BuildStep
         var started = DateTime.UtcNow;
         await RunUnityAsync(context, unity, build, buildLog,
             new BuildProgress(this, context, ExpectedBuildTime(context.State, freshLibrary)), ct);
-        var log = File.ReadAllText(buildLog);
+        var log = FileOps.ReadSharedText(buildLog);
         foreach (var line in log.Split('\n').Select(WithoutTimestamp).Where(l => l.StartsWith("[QuestBuild]", StringComparison.Ordinal)))
             Log.Info(line.TrimEnd());
         if (!log.Contains("[QuestBuild] result: Succeeded") || !File.Exists(apk))
@@ -186,7 +186,7 @@ public sealed partial class UnityBuildStep : BuildStep
     /// <summary>A failure with the editor's own explanation where we recognize it</summary>
     private static BuildException Failure(string logFile, string fallback)
     {
-        var log = File.Exists(logFile) ? File.ReadAllText(logFile) : "";
+        var log = File.Exists(logFile) ? FileOps.ReadSharedText(logFile) : "";
         var errors = string.Join('\n', log.Split('\n')
             .Where(l => l.Contains("error", StringComparison.OrdinalIgnoreCase) || l.Contains("[QuestBuild]") ||
                         l.Contains("Exception", StringComparison.Ordinal))

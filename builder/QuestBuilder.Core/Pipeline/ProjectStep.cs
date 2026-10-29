@@ -155,6 +155,11 @@ public sealed class ProjectStep : BuildStep
         text = Regex.Replace(text, @"(?m)^    UnityEngine\.Rendering\.HighDefinition\.HDRenderPipeline: .*\n", "");
         text = Regex.Replace(text, @"(?m)^(  m_FogStripping:) \d+$", "$1 1");
         FileOps.WriteText(graphics, text);
+
+        // No mouse cursor on the headset. The editor on Windows applies the game's cursor (ItStealsCursor) at startup,
+        // and as an Android texture it is no valid cursor: the error it logs fails the LCVR bundle build
+        var player = Path.Combine(project, "ProjectSettings", "ProjectSettings.asset");
+        FileOps.WriteText(player, Regex.Replace(File.ReadAllText(player), @"(?m)^  defaultCursor: .*$", "  defaultCursor: {fileID: 0}"));
     }
 
     private static void WriteMeta(string path, string template, string guidSeed) =>

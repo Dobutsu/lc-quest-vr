@@ -61,3 +61,6 @@ pre-release `mirror` (a pre-release, so `releases/latest` still points at the bu
 with `gh release upload mirror <file> -R Dobutsu/lc-quest-vr`.
 
 **v0.1.2, 2026-10-28:** the stalled-download fix and the mirror above; the APK is unchanged.
+
+**v0.1.3, 2026-10-28:** scripts give dnfile the DLL's bytes, not its path: pefile maps a file it opens by path and keeps
+the mapping until a full gc, and Windows cannot delete a mapped file (package_swap.py, WinError 32 on a player's build).

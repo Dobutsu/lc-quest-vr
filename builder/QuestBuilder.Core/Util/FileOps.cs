@@ -69,6 +69,14 @@ public static class FileOps
             File.Copy(file, Path.Combine(targetDir, Path.GetFileName(file)), overwrite: true);
     }
 
+    /// <summary>Reads a file that another process may still have open for writing (a Unity log while the editor exits)</summary>
+    public static string ReadSharedText(string path)
+    {
+        using var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete);
+        using var reader = new StreamReader(stream);
+        return reader.ReadToEnd();
+    }
+
     /// <summary>Writes text with "\n" line endings and without a BOM, the same bytes on every OS</summary>
     public static void WriteText(string path, string text)
     {
